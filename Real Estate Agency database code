@@ -1,0 +1,658 @@
+use master
+go
+
+create DATABASE Aleksandar_Projek
+GO
+
+use Aleksandar_projekat
+go
+
+
+create table Prodavac (
+ProdavacID int IDENTITY not null,
+Ime NVARCHAR(200) not null,
+Prezime NVARCHAR(200) not null,
+JMBG NVARCHAR(20) not null,
+CONSTRAINT JMBG_LENGTH CHECK (LEN([JMBG]) = 13),
+constraint pk_Prodavac primary key (ProdavacID)
+)
+
+create table Lokacija (
+    LokacijaID int identity not null,
+    Mesto NVARCHAR (200),
+    constraint pk_Lokacija primary key (LokacijaID)
+)
+
+create table Kategorija (
+    KategorijaID int IDENTITY not null,
+    Tip NVARCHAR (150),
+    constraint pk_Kategorija PRIMARY KEY (KategorijaID)
+)
+
+create table Agent (
+    AgentID int identity not null,
+    Ime NVARCHAR(200) not null,
+    Prezime NVARCHAR(200) not NULL,
+    constraint pk_Agent primary key (AgentID)
+)
+
+create table Kupac (
+    KupacID int IDENTITY not null,
+    Ime NVARCHAR(200) not null,
+    Prezime NVARCHAR(200) not null,
+    JMBG NVARCHAR(20) not null,
+    CONSTRAINT JMBG_LENGTH1 CHECK (LEN([JMBG]) = 13),
+    constraint pk_Kupac primary key (KupacID)
+)
+
+create table Nekretnina (
+NekID int IDENTITY not null,
+Povrsina int not null,
+Poc_cena int not NULL,
+ProdavacID int,
+LokacijaID int,
+KategorijaID int, 
+AgentID int,
+KupacID int,
+constraint pk_Nekretnina primary key (NekID),
+CONSTRAINT fk_Prodavac FOREIGN KEY(ProdavacID) REFERENCES Prodavac(ProdavacID),
+CONSTRAINT fk_Lokacija FOREIGN KEY(LokacijaID) REFERENCES Lokacija(LokacijaID),
+CONSTRAINT fk_Kategorija FOREIGN KEY(KategorijaID) REFERENCES Kategorija(KategorijaID),
+CONSTRAINT fk_Agent FOREIGN KEY(AgentID) REFERENCES Agent(AgentID),
+CONSTRAINT fk_Kupac FOREIGN KEY(KupacID) REFERENCES Kupac(KupacID)
+)
+
+create table Cena_nekretnine(
+    CenaID int IDENTITY not null,
+    Iznos decimal not null,
+    Datum date not null,
+    NekID int not null,
+    constraint pk_Cena primary key (CenaID),
+    CONSTRAINT fk_Nekretnine FOREIGN KEY(NekID) REFERENCES Nekretnina(NekID)
+)
+
+create table Odlazak_na_teren (
+    OdlazakID int IDENTITY not null,
+    Vreme date not null,
+    Mesto NVARCHAR(200) not NULL,
+    KupacID int not null,
+    AgentID int not null,
+    constraint pk_Odlazak primary key (OdlazakID),
+    constraint fk_Kupac1 FOREIGN key(KupacID) REFERENCES Kupac(KupacID),
+    constraint fk_Agent1 FOREIGN key(AgentID) REFERENCES Agent(AgentID)
+)
+
+create table Ugovor (
+    UgovorID int identity not null,
+    Datum date not null,
+    Provizija decimal not NULL,
+    NekID int not null,
+    KupacID int not null,
+    CONSTRAINT pk_Ugovor primary key (UgovorID),
+    constraint fk_Kupac2 FOREIGN key(KupacID) REFERENCES Kupac(KupacID),
+    constraint fk_Nekretnine1 FOREIGN key(NekID) REFERENCES Nekretnina(NekID)
+)
+alter table Ugovor
+alter COLUMN Datum DATETIME not null
+GO
+
+--Prodavac
+
+CREATE PROCEDURE Prodavac_INS (
+@Ime NVARCHAR(200),
+@Prezime NVARCHAR(200),
+@JMBG CHAR(20)
+)
+AS
+BEGIN
+INSERT INTO Prodavac (Ime, Prezime, JMBG)
+VALUES (@Ime, @Prezime, @JMBG)
+END
+GO
+
+CREATE PROCEDURE Prodavac_UPD (
+@ProdavacID INT,
+@Ime NVARCHAR(200),
+@Prezime NVARCHAR(200),
+@JMBG CHAR(20)
+)
+AS
+BEGIN
+UPDATE Prodavac
+  SET Ime = @Ime,
+  Prezime = @Prezime,
+  JMBG = @JMBG
+WHERE ProdavacID = @ProdavacID
+END
+GO
+
+CREATE PROCEDURE Prodavac_DEL (
+@ProdavacID INT
+)
+AS
+BEGIN
+DELETE FROM Prodavac
+WHERE ProdavacID = @ProdavacID
+END
+GO
+
+
+--Lokacija
+
+CREATE PROCEDURE Lokacija_INS (
+@Mesto NVARCHAR(200)
+)
+AS
+BEGIN
+INSERT INTO Lokacija (Mesto)
+VALUES (@Mesto)
+END
+GO
+
+CREATE PROCEDURE Lokacija_UPD (
+@LokacijaID INT,
+@Mesto NVARCHAR(200)
+)
+AS
+BEGIN
+UPDATE Lokacija
+  SET Mesto = @Mesto
+WHERE LokacijaID = @LokacijaID
+END
+GO
+
+CREATE PROCEDURE Lokacija_DEL (
+@LokacijaID INT
+)
+AS
+BEGIN
+DELETE FROM Lokacija
+WHERE LokacijaID = @LokacijaID
+END
+GO
+
+
+--Kategorija
+
+CREATE PROCEDURE Kategorija_INS (
+@Tip NVARCHAR(200)
+)
+AS
+BEGIN
+INSERT INTO Kategorija (Tip)
+VALUES (@Tip)
+END
+GO
+
+CREATE PROCEDURE Kategorija_UPD (
+@KategorijaID INT,
+@Tip NVARCHAR(200)
+)
+AS
+BEGIN
+UPDATE Kategorija
+  SET Tip = @Tip
+WHERE KategorijaID = @KategorijaID
+END
+GO
+
+CREATE PROCEDURE Kategorija_DEL (
+@KategorijaID INT
+)
+AS
+BEGIN
+DELETE FROM Kategorija
+WHERE KategorijaID = @KategorijaID
+END
+GO
+
+
+--Agent
+
+CREATE PROCEDURE Agent_INS (
+@Ime NVARCHAR(200),
+@Prezime NVARCHAR(200)
+)
+AS
+BEGIN
+INSERT INTO Agent (Ime, Prezime)
+VALUES (@Ime, @Prezime)
+END
+GO
+
+CREATE PROCEDURE Agent_UPD (
+@AgentID INT,
+@Ime NVARCHAR(200),
+@Prezime NVARCHAR(200)
+)
+AS
+BEGIN
+UPDATE Agent
+  SET Ime = @Ime,
+  Prezime = @Prezime
+WHERE AgentID = @AgentID
+END
+GO
+
+CREATE PROCEDURE Agent_DEL (
+@AgentID INT
+)
+AS
+BEGIN
+DELETE FROM Agent
+WHERE AgentID = @AgentID
+END
+GO
+
+
+--Kupac
+
+CREATE PROCEDURE Kupac_INS (
+@Ime NVARCHAR(200),
+@Prezime NVARCHAR(200),
+@JMBG CHAR(20)
+)
+AS
+BEGIN
+INSERT INTO Kupac (Ime, Prezime, JMBG)
+VALUES (@Ime, @Prezime, @JMBG)
+END
+GO
+
+CREATE PROCEDURE Kupac_UPD (
+@KupacID INT,
+@Ime NVARCHAR(200),
+@Prezime NVARCHAR(200),
+@JMBG CHAR(20)
+)
+AS
+BEGIN
+UPDATE Kupac
+  SET Ime = @Ime,
+  Prezime = @Prezime,
+  JMBG = @JMBG
+WHERE KupacID = @KupacID
+END
+GO
+
+CREATE PROCEDURE Kupac_DEL (
+@KupacID INT
+)
+AS
+BEGIN
+DELETE FROM Kupac
+WHERE KupacID = @KupacID
+END
+GO
+
+--Ugovor
+
+CREATE PROCEDURE Ugovor_INS1 (  
+    @Datum DATETIME,
+    @Provizija decimal,
+    @NekID INT,
+    @KupacID int
+)
+AS
+BEGIN
+    INSERT INTO Ugovor(Datum,Provizija,NekID,KupacID)
+    VALUES (@Datum,@Provizija,@NekID,@KupacID)
+    BEGIN TRAN
+    IF @@ERROR != 0
+            ROLLBACK TRAN
+            else
+           commit TRAN
+END
+GO
+CREATE PROCEDURE Ugovor_UPD (
+    @UgovorID int,
+    @Datum DATETIME,
+    @Provizija decimal,
+    @NekID INT,
+    @KupacID int)
+AS
+BEGIN
+    UPDATE Ugovor
+
+       set Datum=@Datum
+
+     WHERE  UgovorID= @UgovorID
+     and  NekID=@NekID
+     and  KupacID=@KupacID
+     IF @@ERROR != 0
+        BEGIN
+            ROLLBACK TRANSACTION
+            end
+            else
+             begin  commit
+        END
+END
+GO
+CREATE PROCEDURE Ugovor_DEL (
+    
+    @UgovorID INT,
+    @NekID int,
+    @KupacID int
+)
+AS
+BEGIN
+    DELETE FROM Ugovor
+     WHERE UgovorID = @UgovorID
+     and NekID=@NekID
+     and KupacID=@KupacID
+     IF @@ERROR != 0
+        BEGIN
+            ROLLBACK TRANSACTION
+            end
+            else
+             begin  commit
+        END
+END
+GO
+
+--Odlazak na teren 
+
+CREATE PROCEDURE Odlazak_INS1 ( 
+    @Vreme date,
+    @Mesto NVARCHAR(200),
+    @KupacID int,
+    @AgentID int
+)
+AS
+BEGIN
+    INSERT INTO Odlazak_na_teren(Vreme,Mesto,KupacID,AgentID)
+    VALUES (@Vreme,@Mesto,@KupacID,@AgentID)
+    BEGIN TRAN
+    IF @@ERROR != 0
+            ROLLBACK TRAN
+            else
+           commit TRAN
+END
+GO
+CREATE PROCEDURE Odlazak_UPD (
+    @OdlazakID int,
+    @Vreme date,
+    @Mesto NVARCHAR(200),
+    @KupacID int,
+    @AgentID int
+)
+AS
+BEGIN
+    UPDATE Odlazak_na_teren
+
+       set Vreme=@Vreme
+
+     WHERE  OdlazakID= @OdlazakID
+     and  AgentID=@AgentID
+     and  KupacID=@KupacID
+     IF @@ERROR != 0
+        BEGIN
+            ROLLBACK TRANSACTION
+            end
+            else
+             begin  commit
+        END
+END
+GO
+CREATE PROCEDURE Odlazak_DEL (
+    
+    @OdlazakID int,
+    @KupacID int,
+    @AgentID int
+)
+AS
+BEGIN
+    DELETE FROM Odlazak_na_teren
+     WHERE OdlazakID = @OdlazakID
+     and AgentID=@AgentID
+     and KupacID=@KupacID
+     IF @@ERROR != 0
+        BEGIN
+            ROLLBACK TRANSACTION
+            end
+            else
+             begin  commit
+        END
+END
+GO
+
+--Cena nekretnine
+
+CREATE PROCEDURE Cena_INS1 (    
+    @Iznos decimal,
+    @Datum date,
+    @NekID int
+)
+AS
+BEGIN
+    INSERT INTO Cena_nekretnine(Iznos,Datum,NekID)
+    VALUES (@Iznos,@Datum,@NekID)
+    BEGIN TRAN
+    IF @@ERROR != 0
+            ROLLBACK TRAN
+            else
+           commit TRAN
+END
+GO
+CREATE PROCEDURE Cena_UPD (
+    @CenaID int,
+    @Iznos decimal,
+    @Datum date,
+    @NekID int
+)
+AS
+BEGIN
+    UPDATE Cena_nekretnine
+
+       set @Datum=@Datum
+
+     WHERE  CenaID= @CenaID
+     and  NekID=@NekID
+     IF @@ERROR != 0
+        BEGIN
+            ROLLBACK 
+            end
+            else
+             begin  commit
+        END
+END
+GO
+CREATE PROCEDURE Cena_DEL (
+    
+    @NekID int,
+    @CenaID int
+)
+AS
+BEGIN
+    DELETE FROM Cena_nekretnine
+     WHERE CenaID = @CenaID
+     and NekID=@NekID
+     IF @@ERROR != 0
+        BEGIN
+            ROLLBACK TRANSACTION
+            end
+            else
+             begin  commit
+        END
+END
+GO
+
+--Nekretnine
+
+CREATE PROCEDURE Nekretnina_INS3 (  
+    @Povrsina int,
+    @Poc_cena int,
+    @ProdavacID int,
+    @LokacijaID int,
+    @KategorijaID int, 
+    @AgentID int,
+    @KupacID int
+)
+AS
+BEGIN 
+    INSERT INTO Nekretnina(Povrsina,Poc_cena,ProdavacID,LokacijaID,KategorijaID,AgentID,KupacID)
+    VALUES (@Povrsina,@Poc_cena,@ProdavacID,@LokacijaID,@KategorijaID,@AgentID,@KupacID)
+    BEGIN TRAN
+    IF @@ERROR != 0
+            ROLLBACK TRAN
+            else
+           commit TRAN
+END
+GO
+CREATE PROCEDURE Nekretnina_UPD (
+    @NekID int,
+    @Povrsina int,
+    @Poc_cena int,
+    @ProdavacID int,
+    @LokacijaID int,
+    @KategorijaID int, 
+    @AgentID int,
+    @KupacID int)
+AS
+BEGIN
+    UPDATE Nekretnina
+
+       set Povrsina=@Povrsina,
+            Poc_cena=@Poc_cena
+            
+
+     WHERE  NekID= @NekID
+     and  ProdavacID=@ProdavacID
+     and  LokacijaID=@LokacijaID
+     and KategorijaID=@KategorijaID
+     and AgentID=@AgentID
+     and KupacID=@KupacID
+     IF @@ERROR != 0
+        BEGIN
+            ROLLBACK TRANSACTION
+            end
+            else
+             begin  commit
+        END
+END
+GO
+CREATE PROCEDURE Nekretnina_DEL (
+    @NekID int,
+    @ProdavacID int,
+    @LokacijaID int,
+    @KategorijaID int, 
+    @AgentID int,
+    @KupacID int)
+AS
+BEGIN
+    DELETE FROM Nekretnina
+     WHERE NekID = @NekID
+     and ProdavacID=@ProdavacID
+     and LokacijaID=@LokacijaID
+     and KategorijaID=@KategorijaID
+     and AgentID=@AgentID
+     and KupacID=@KupacID
+     IF @@ERROR != 0
+        BEGIN
+            ROLLBACK TRANSACTION
+            end
+            else
+             begin  commit
+        END
+END
+GO
+
+
+EXECUTE Prodavac_INS @Ime=N'Aleksandar',@Prezime= N'Markovic', @JMBG='6529613258164'
+go
+EXECUTE Prodavac_INS N'Marko',N'Stefanovic', '1344012758124'
+EXECUTE Prodavac_INS N'Dusan',N'Jovanovic', '7876043837839'
+EXECUTE Prodavac_INS N'Stefan', N'Vlajkovic', '5356020246989'
+EXECUTE Prodavac_INS N'Aleksa', N'Aleksic', '5275006137794'
+EXECUTE Prodavac_INS N'Petar', N'Micic', '3853240518187'
+EXECUTE Prodavac_INS N'Veljko', N'Ivanovic', '0644910168064'
+
+EXECUTE Agent_INS N'Ivan',N'Ilic'
+EXECUTE Agent_INS N'Dragan',N'Petrovic'
+EXECUTE Agent_INS N'Darko','Dulic'
+EXECUTE Agent_INS N'Dusan',N'Mitrovic'
+EXECUTE Agent_INS N'Kristijan',N'Petrovic'
+
+EXECUTE Lokacija_INS N'Vozdovac'
+EXECUTE Lokacija_INS N'Palilula'
+EXECUTE Lokacija_INS N'Zvezdara'
+EXECUTE Lokacija_INS N'Vracar'
+EXECUTE Lokacija_INS N'Centar'
+EXECUTE Lokacija_INS N'Slavija'
+EXECUTE Lokacija_INS N'Savski Venac'
+EXECUTE Lokacija_INS N'Zemun'
+EXECUTE Lokacija_INS N'Blok45'
+EXECUTE Lokacija_INS N'Blok19a'
+EXECUTE Lokacija_INS N'Blok21'
+
+EXECUTE Kategorija_INS N'Garsonjera'
+execute Kategorija_INS N'Garsonjera'
+EXECUTE Kategorija_INS N'Jednosoban'
+EXECUTE Kategorija_INS N'Dvosoban'
+execute Kategorija_INS N'Trosoban'
+
+EXECUTE Kupac_INS N'Nemanja',N'Spasojevic','3113585748446'
+EXECUTE Kupac_INS N'Stefan',N'Markovic','9824982851872'
+EXECUTE Kupac_INS N'Ilija',N'Ravlic','5821486048983'
+EXECUTE Kupac_INS N'Veljko',N'Rakovic','3839833431281'
+EXECUTE Kupac_INS N'Aleksandar',N'Jokic','1198179955713' 
+
+
+EXECUTE Nekretnina_INS3 80,199000,3,4,2,3,5
+EXECUTE Nekretnina_INS3 65,148000,4,4,1,3,4
+EXECUTE Nekretnina_INS3 30,40500,6,4,3,3,2
+EXECUTE Nekretnina_INS3 78,99000,3,3,4,4,4
+EXECUTE Nekretnina_INS3 45,33000,3,2,2,2,2
+EXECUTE Nekretnina_INS3 29,30000,2,3,3,2,2
+EXECUTE Nekretnina_INS3 54,185000,6,3,1,4,5
+EXECUTE Nekretnina_INS3 117,343000,2,3,4,4,3
+EXECUTE Nekretnina_INS3 35,35000,4,2,4,3,4
+EXECUTE Nekretnina_INS3 107,568000,7,4,3,5,4
+
+EXECUTE Ugovor_INS1 '20220103 10:34:00 AM',0,7,2
+EXECUTE Ugovor_INS1 '20220803 3:00:00 PM',3,3,4
+EXECUTE Ugovor_INS1 '20220301 3:00:00 PM',3,4,1
+EXECUTE Ugovor_INS1 '20220515 3:00:00 PM',4,9,2
+EXECUTE Ugovor_INS1 '20220310 3:00:00 PM',3,8,3
+EXECUTE Ugovor_INS1 '20220325 3:00:00 PM',4,2,4
+EXECUTE Ugovor_INS1 '20220712 3:00:00 PM',1,5,4
+EXECUTE Ugovor_INS1 '20220610 3:00:00 PM',2,1,4
+EXECUTE Ugovor_INS1 '20221011 3:00:00 PM',0,6,3
+EXECUTE Ugovor_INS1 '20221119 3:00:00 PM',2,9,4
+EXECUTE Ugovor_INS1 '20220129 3:00:00 PM',3,10,5
+EXECUTE Ugovor_INS1 '20220213 3:00:00 PM',4,7,3
+EXECUTE Ugovor_INS1 '20220509 3:00:00 PM',0,8,2
+EXECUTE Ugovor_INS1 '20220717 3:00:00 PM',5,6,1
+
+
+
+EXECUTE Odlazak_INS1 '20220103 10:34:00 AM',4,2,4
+EXECUTE Odlazak_INS1 '20221203 10:00:00 AM',3,4,2
+EXECUTE Odlazak_INS1 '20211104 11:00:00 AM',7,5,1
+EXECUTE Odlazak_INS1 '20221204 11:30:00 AM',8,2,4
+EXECUTE Odlazak_INS1 '20220505 12:00:00 AM',5,1,5
+EXECUTE Odlazak_INS1 '20210805 1:00:00 AM',10,3,2
+EXECUTE Odlazak_INS1 '20220810 2:30:00 PM',11,5,1
+EXECUTE Odlazak_INS1 '20211009 11:00:00 AM',6,3,4
+EXECUTE Odlazak_INS1 '20221111 12:45:00 AM',7,4,1
+EXECUTE Odlazak_INS1 '20220303 3:00:00 PM',2,1,4
+EXECUTE Odlazak_INS1 '20220909 2:00:00 PM',1,4,4
+
+EXECUTE Cena_INS1 195000,'20220103',6
+EXECUTE Cena_INS1 148000,'20221204',8
+EXECUTE Cena_INS1 30000,'20221005',4
+EXECUTE Cena_INS1 40500,'20221106',5
+EXECUTE Cena_INS1 35000,'20220905',9
+EXECUTE Cena_INS1 99000,'20220807',2
+EXECUTE Cena_INS1 185000,'20220708',1
+
+
+select * from Lokacija
+select * from Kategorija
+select * from Prodavac
+select * from Agent
+select * from Kupac
+select * from Nekretnina
+select * from Odlazak_na_teren
+select * from Ugovor
+select * from Cena_nekretnine
